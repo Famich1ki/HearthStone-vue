@@ -3,19 +3,16 @@
     <div class="background"></div>
     <div class="content">
       <SearchBar />
-      <ImageList />
     </div>
   </div>
 </template>
 
 <script>
   import SearchBar from './components/SearchBar.vue';
-  import ImageList from './components/Image.vue';
 
   export default {
     components: {
       SearchBar,
-      ImageList
     }
   }
 </script>

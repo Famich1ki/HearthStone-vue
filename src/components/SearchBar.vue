@@ -155,7 +155,16 @@
 
     <div class="image-list">
         <div v-for="result in searchResult" :key="result.id" class="image-item">
-            <img :src="`https://art.hearthstonejson.com/v1/render/latest/zhCN/256x/${result.id}.png`" :alt="result.name">
+            <img :src="`https://art.hearthstonejson.com/v1/render/latest/zhCN/256x/${result.id}.png`"
+                 :alt="result.name" loading="lazy"
+                 @mouseenter="showOverlay(result.id)"
+                 @mouseleave="hideOverlay(result.id)">
+            <div class="overlay" :class="{ 'visible': visibleOverlayId === result.id }">
+                <div class="name">{{ result['name']}} </div>
+                <div class="card_set">{{ findClassSetByNumber(result['cardSet']) }}</div>
+                <div class="flavor">{{ result['flavor'] }}</div>
+
+            </div>
         </div>
     </div>
 </template>
@@ -244,7 +253,29 @@
 
     const searchResult = ref([]);
 
+    const visibleOverlayId = ref(null);
 
+    // 绑定两个函数，把showOverlay绑定到mouseover方法，鼠标悬停时触发
+    const showOverlay = (id) => {
+        visibleOverlayId.value = id;
+    };
+    // hideOverlay绑定到mouseleave方法，鼠标离开时触发
+    const hideOverlay = (id) => {
+        if (visibleOverlayId.value === id) {
+            visibleOverlayId.value = null;
+        }
+    };
+
+    const showKeys = ['name', 'rule', 'flavor'];
+
+    function findClassSetByNumber(number) {
+        for ( const key in cardSetMapping) {
+            if (number === cardSetMapping[key]) {
+                return key;
+            }
+        }
+        return null; // 如果没有找到对应的值，返回 null
+    }
 
 </script>
 
@@ -331,6 +362,7 @@
         /*background-color: rgba(255, 255, 255, 0.1);*/
         border-radius: 8px;
         overflow: hidden;
+        position: relative;
     }
 
     .image-item img {
@@ -338,5 +370,42 @@
         height: 100%;
         border-radius: 4px;
         display: block; /* 移除行内元素带来的空隙 */
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        /*align-items: center;*/
+        /*justify-content: center;*/
+        transform: translateY(-100%);  /* 一开始将信息框设置在图片最上方 */
+        transition: transform 0.5s ease-in-out; /* 移动的时间为0.3秒， ease-in-out 设定移动时开始和结束较慢，中间快 */
+    }
+
+    .overlay.visible {
+        transform: translateY(0); /* 可见时移动到完全覆盖图片 */
+    }
+
+    .name {
+    font-family: "PingFang";
+    }
+
+    .card_set {
+        margin-top: 15px;
+        font-size: 15px;
+        font-family: "Hua Wen Kai Ti";
+    }
+
+    .flavor {
+        opacity: 0.8; /* 设置透明度为 80% */
+        font-style: italic; /* 设置斜体 */
+        font-size: 12px;
+        margin-top: 20px;
     }
 </style>
