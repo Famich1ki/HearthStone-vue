@@ -1,5 +1,5 @@
 import axios from "axios"
-const baseURL = "http://35.78.0.61/cards/api";
+const baseURL = "http://18.182.168.169/cards/api";
 const instance = axios.create({baseURL});
 
 instance.interceptors.response.use(
