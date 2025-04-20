@@ -1,5 +1,5 @@
 import axios from "axios"
-const baseURL = "https://hearthstone-api.findfuns.org:8080/cards/api";
+const baseURL = "https://hearthstone-api.findfuns.org:443/cards/api";
 const instance = axios.create({baseURL});
 
 instance.interceptors.response.use(
