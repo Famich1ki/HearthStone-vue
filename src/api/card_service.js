@@ -89,6 +89,11 @@ export function selectAll(name, cost, cardClass, cardSet, rule) {
     return request.get(checkEnd(requestUrl));
 }
 
+export function selectDefault() {
+    let requestUrl = "/default";
+    return request.get(requestUrl);
+}
+
 function selectCard(type, name, cost, cardClass, cardSet, rule) {
     let requestUrl = "/" + type + "?";
     if (name != null) {

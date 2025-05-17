@@ -173,11 +173,23 @@
     // export default {
     //     name: 'SearchBar',
     // }
-    import {ref} from 'vue';
+    import {ref, onMounted} from 'vue';
     import {cardClassMapping as ccm, costMapping as cm, cardSetMapping as stm, type as t, attack as atk,
         health as hlt, rarity as rt, race as rc, spellSchool as ss, durability as d, armor as a} from "../utils/mapping";
-    import {selectMinion, selectSpell, selectWeapon, selectHero, selectLocation, selectHeroPower, selectAll} from "../api/card_service";
+    import {
+        selectMinion,
+        selectSpell,
+        selectWeapon,
+        selectHero,
+        selectLocation,
+        selectHeroPower,
+        selectAll,
+        selectDefault
+    } from "../api/card_service";
 
+    onMounted(async () => {
+        searchResult.value = await selectDefault();
+    })
 
     const cardClassMapping = ccm;
     const costMapping = cm;
