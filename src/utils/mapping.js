@@ -81,7 +81,7 @@ const cardSetMapping = {
 };
 
 const type = {
-    "不限": null,
+    "选择": null,
     "随从": "minion",
     "法术": "spell",
     "武器": "weapon",

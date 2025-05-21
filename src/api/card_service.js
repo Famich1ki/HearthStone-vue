@@ -1,6 +1,6 @@
 import request from '../utils/request';
 
-export function selectMinion(name, cost, cardClass, cardSet, rule, attack, health, rarity, race) {
+export function selectMinion(name, cost, cardClass, cardSet, rule, attack, health, rarity, race, pageNum, pageSize) {
     let requestUrl = selectCard("minion", name, cost, cardClass, cardSet, rule);
 
     if (attack != null) {
@@ -16,10 +16,10 @@ export function selectMinion(name, cost, cardClass, cardSet, rule, attack, healt
         requestUrl += "race=" +race + "&";
     }
 
-    return request.get(checkEnd(requestUrl));
+    return request.get(checkEnd(pagination(requestUrl, pageNum, pageSize)));
 }
 
-export function selectSpell(name, cost, cardClass, cardSet, rule, rarity, spellSchool) {
+export function selectSpell(name, cost, cardClass, cardSet, rule, rarity, spellSchool, pageNum, pageSize) {
     let requestUrl = selectCard("spell", name, cost, cardClass, cardSet, rule);
 
     if(rarity != null) {
@@ -29,10 +29,10 @@ export function selectSpell(name, cost, cardClass, cardSet, rule, rarity, spellS
         requestUrl += "spellSchool=" + spellSchool + "&";
     }
 
-    return request.get(checkEnd(requestUrl));
+    return request.get(checkEnd(pagination(requestUrl, pageNum, pageSize)));
 }
 
-export function selectWeapon(name, cost, cardClass, cardSet, rule, attack, durability, rarity) {
+export function selectWeapon(name, cost, cardClass, cardSet, rule, attack, durability, rarity, pageNum, pageSize) {
     let requestUrl = selectCard("weapon", name, cost, cardClass, cardSet, rule);
 
     if(attack != null) {
@@ -45,10 +45,10 @@ export function selectWeapon(name, cost, cardClass, cardSet, rule, attack, durab
         requestUrl += "rarity=" + rarity + "&";
     }
 
-    return request.get(checkEnd(requestUrl));
+    return request.get(checkEnd(pagination(requestUrl, pageNum, pageSize)));
 }
 
-export function selectHero(name, cost, cardClass, cardSet, rule, armor, health, rarity) {
+export function selectHero(name, cost, cardClass, cardSet, rule, armor, health, rarity, pageNum, pageSize) {
     let requestUrl = selectCard("hero", name, cost, cardClass, cardSet, rule);
 
     if(armor != null) {
@@ -61,10 +61,10 @@ export function selectHero(name, cost, cardClass, cardSet, rule, armor, health, 
         requestUrl += "rarity=" + rarity + "&";
     }
 
-    return request.get(checkEnd(requestUrl));
+    return request.get(checkEnd(pagination(requestUrl, pageNum, pageSize)));
 }
 
-export function selectLocation(name, cost, cardClass, cardSet, rule, health, rarity) {
+export function selectLocation(name, cost, cardClass, cardSet, rule, health, rarity, pageNum, pageSize) {
     let requestUrl = selectCard("location", name, cost, cardClass, cardSet, rule);
 
     if(health != null) {
@@ -74,23 +74,23 @@ export function selectLocation(name, cost, cardClass, cardSet, rule, health, rar
         requestUrl += "rarity=" + rarity + "&";
     }
 
-    return request.get(checkEnd(requestUrl));
+    return request.get(checkEnd(pagination(requestUrl, pageNum, pageSize)));
 }
 
-export function selectHeroPower(name, cost, cardClass, cardSet, rule) {
+export function selectHeroPower(name, cost, cardClass, cardSet, rule, pageNum, pageSize) {
     let requestUrl = selectCard("heroPower", name, cost, cardClass, cardSet, rule);
 
-    return request.get(checkEnd(requestUrl));
+    return request.get(checkEnd(pagination(requestUrl, pageNum, pageSize)));
 }
 
-export function selectAll(name, cost, cardClass, cardSet, rule) {
-    let requestUrl = selectCard("all", name, cost, cardClass, cardSet, rule);
+// export function selectAll(name, cost, cardClass, cardSet, rule) {
+//     let requestUrl = selectCard("all", name, cost, cardClass, cardSet, rule);
+//
+//     return request.get(checkEnd(requestUrl));
+// }
 
-    return request.get(checkEnd(requestUrl));
-}
-
-export function selectDefault() {
-    let requestUrl = "/default";
+export function selectDefault(pageNum, pageSize) {
+    let requestUrl = "/default?" + "pageNum=" + pageNum + "&" + "pageSize=" + pageSize;
     return request.get(requestUrl);
 }
 
@@ -119,5 +119,11 @@ function checkEnd(requestUrl) {
     if (requestUrl.endsWith("&")) {
         requestUrl = requestUrl.slice(0, -1);
     }
+    return requestUrl;
+}
+
+function pagination(requestUrl, pageNum, pageSize) {
+    requestUrl += "pageNum=" + pageNum + "&" + "pageSize=" + pageSize;
+
     return requestUrl;
 }

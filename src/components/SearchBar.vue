@@ -48,7 +48,7 @@
             </select>
         </div>
 
-        <button @click="select">Search!</button>
+        <button @click="select(1,20)">Search!</button>
 
         <div class="type-search">
 <!--        随从-->
@@ -152,9 +152,21 @@
             </div>
         </div>
     </div>
+    <div class="pagination">
+        <button @click="goToFirstPage" :disabled="searchInfo.pageNum <= 1">第一页</button>
+        <button @click="loadPreviousPage" :disabled="searchInfo.pageNum <= 1">上一页</button>
+
+        <span>第 {{ searchInfo.pageNum }} 页 / 共 {{ totalPages }} 页</span>
+
+        <button @click="loadNextPage" :disabled="searchInfo.pageNum >= totalPages">下一页</button>
+        <button @click="goToLastPage" :disabled="searchInfo.pageNum >= totalPages">最后一页</button>
+
+        <input type="number" v-model.number="jumpPageNum" min="1" :max="totalPages" style="width: 60px; margin-left: 10px;">
+        <button @click="jumpToPage">跳转</button>
+    </div>
 
     <div class="image-list">
-        <div v-for="result in searchResult" :key="result.id" class="image-item">
+        <div v-for="result in dataInfo" :key="result.id" class="image-item">
             <img :src="`https://art.hearthstonejson.com/v1/render/latest/zhCN/256x/${result.id}.png`"
                  :alt="result.name" loading="lazy"
                  @mouseenter="showOverlay(result.id)"
@@ -167,6 +179,21 @@
             </div>
         </div>
     </div>
+
+
+        <div class="pagination">
+            <button @click="goToFirstPage" :disabled="searchInfo.pageNum <= 1">第一页</button>
+            <button @click="loadPreviousPage" :disabled="searchInfo.pageNum <= 1">上一页</button>
+
+            <span>第 {{ searchInfo.pageNum }} 页 / 共 {{ totalPages }} 页</span>
+
+            <button @click="loadNextPage" :disabled="searchInfo.pageNum >= totalPages">下一页</button>
+            <button @click="goToLastPage" :disabled="searchInfo.pageNum >= totalPages">最后一页</button>
+
+            <input type="number" v-model.number="jumpPageNum" min="1" :max="totalPages" style="width: 60px; margin-left: 10px;">
+            <button @click="jumpToPage">跳转</button>
+        </div>
+
 </template>
 
 <script setup>
@@ -183,12 +210,14 @@
         selectHero,
         selectLocation,
         selectHeroPower,
-        selectAll,
+        // selectAll,
         selectDefault
     } from "../api/card_service";
 
     onMounted(async () => {
-        searchResult.value = await selectDefault();
+        searchResult.value = await selectDefault(searchInfo.value.pageNum, searchInfo.value.pageSize);
+        // console.log("加载初始数据：", searchResult.value);
+        setValues();
     })
 
     const cardClassMapping = ccm;
@@ -218,7 +247,10 @@
         durability: null,
         armor: null,
 
-        searchType: null
+        searchType: null,
+
+        pageNum: 1,
+        pageSize: 20
     });
 
     function clear() {
@@ -230,40 +262,46 @@
         }
     }
 
-    async function select() {
+    async function select(pageNum, pageSize) {
         const value = searchInfo.value;
-
+        // console.log(value);
+        // console.log(searchInfo);
         if (value.searchType == null) {
-            searchResult.value = await selectAll(value.name, value.cost, value.cardClass, value.cardSet,
-                value.rule)
+            searchResult.value = await selectDefault(pageNum, pageSize);
         }
         else if (value.searchType === "minion") {
             searchResult.value = await selectMinion(value.name, value.cost, value.cardClass, value.cardSet,
-                value.rule, value.attack, value.health, value.rarity, value.race);
+                value.rule, value.attack, value.health, value.rarity, value.race, pageNum, pageSize);
         }
         else if (value.searchType === "spell") {
             searchResult.value = await selectSpell(value.name, value.cost, value.cardClass, value.cardSet,
-                value.rule, value.rarity, value.spellSchool);
+                value.rule, value.rarity, value.spellSchool, pageNum, pageSize);
         }
         else if (value.searchType === "weapon") {
             searchResult.value = await selectWeapon(value.name, value.cost, value.cardClass, value.cardSet,
-                value.rule, value.attack, value.durability, value.rarity);
+                value.rule, value.attack, value.durability, value.rarity, pageNum, pageSize);
         }
         else if (value.searchType === "hero") {
             searchResult.value = await selectHero(value.name, value.cost, value.cardClass, value.cardSet,
-                value.rule, value.armor, value.health, value.rarity);
+                value.rule, value.armor, value.health, value.rarity, pageNum, pageSize);
         }
         else if (value.searchType === "location") {
             searchResult.value = await selectLocation(value.name, value.cost, value.cardClass, value.cardSet,
-                value.rule, value.health, value.rarity);
+                value.rule, value.health, value.rarity, pageNum, pageSize);
         }
         else if (value.searchType === "heroPower") {
             searchResult.value = await selectHeroPower(value.name, value.cost, value.cardClass, value.cardSet,
-                value.rule)
+                value.rule, pageNum, pageSize)
         }
+
+        setValues();
     }
 
     const searchResult = ref([]);
+    const dataInfo = ref();
+    const totalPages = ref();
+    const totalItems = ref();
+    const jumpPageNum = ref();
 
     const visibleOverlayId = ref(null);
 
@@ -289,6 +327,46 @@
         return null; // 如果没有找到对应的值，返回 null
     }
 
+    function setValues() {
+        dataInfo.value = searchResult.value.dataInfo;
+        searchInfo.value.pageNum = searchResult.value.pageNum;
+        searchInfo.value.pageSize = searchResult.value.pageSize;
+        totalPages.value = searchResult.value.totalPages;
+        totalItems.value = searchResult.value.totalItems;
+    }
+
+    const loadNextPage = () => {
+        if (searchInfo.value.pageNum < totalPages.value) {
+            searchInfo.value.pageNum ++;
+            select(searchInfo.value.pageNum, searchInfo.value.pageSize);
+        }
+    }
+
+    const loadPreviousPage = () => {
+        if (searchInfo.value.pageNum > 1) {
+            searchInfo.value.pageNum --;
+            select(searchInfo.value.pageNum, searchInfo.value.pageSize);
+        }
+    }
+
+    const jumpToPage = () => {
+        if(jumpPageNum.value < 0 || jumpPageNum.value > totalPages.value) {
+            window.alert("页码超出范围");
+        } else {
+            searchInfo.value.pageNum = jumpPageNum.value;
+            select(searchInfo.value.pageNum, searchInfo.value.pageSize);
+        }
+    }
+
+    const goToFirstPage = () => {
+        searchInfo.value.pageNum = 1;
+        select(searchInfo.value.pageNum, searchInfo.value.pageSize);
+    }
+
+    const goToLastPage = () => {
+        searchInfo.value.pageNum = totalPages.value;
+        select(searchInfo.value.pageNum, searchInfo.value.pageSize);
+    }
 </script>
 
 <style scoped>
@@ -419,5 +497,21 @@
         font-style: italic; /* 设置斜体 */
         font-size: 12px;
         margin-top: 20px;
+    }
+    .pagination {
+        display: flex;
+        justify-content: center; /* 水平居中 */
+        align-items: center;      /* 垂直居中 */
+        gap: 12px;                /* 按钮与文字之间的间距 */
+        margin-top: 20px;
+        flex-wrap: nowrap;        /* 不允许换行 */
+        color: white;
+    }
+
+    .pagination button {
+        padding: 6px 14px;
+        font-size: 14px;
+        white-space: nowrap;      /* 防止“上一页”变成两行 */
+        min-width: 80px;
     }
 </style>
